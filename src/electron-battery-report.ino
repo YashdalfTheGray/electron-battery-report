@@ -8,6 +8,7 @@
 FuelGauge fuel;
 double vCell = 0;
 double percent = 0;
+int canPublishLowBatteryWarning = 1;
 
 void setup()
 {
@@ -19,10 +20,15 @@ void loop()
 {
   vCell = fuel.getVCell();
   percent = fuel.getSoC();
-  delay(1000);
-}
 
-double getBatteryPercent(double vCell)
-{
-  return ((2.427 * vCell) - 8.981) * 100;
+  if (percent < 10.0 && canPublishLowBatteryWarning)
+  {
+    Particle.publish("/electron/battery-warning", "10%", 86400, PRIVATE);
+    canPublishLowBatteryWarning = 0;
+  }
+
+  if (percent > 50.0)
+  {
+    canPublishLowBatteryWarning = 1;
+  }
 }
